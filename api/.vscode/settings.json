@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/1f502955-71db-4e4f-8c99-9adcbff74597/resourceGroups/DefaultResourceGroup-eastus2/providers/Microsoft.Web/sites/360learnbackend",
+    "appService.deploySubpath": "."
+}

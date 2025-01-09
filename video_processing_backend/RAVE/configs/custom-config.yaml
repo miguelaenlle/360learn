@@ -1,0 +1,25 @@
+batch_size: 4
+batch_size_vae: 1
+cond_step_start: 0.0
+controlnet_conditioning_scale: 1.0
+controlnet_guidance_end: 1.0
+controlnet_guidance_start: 0.0
+give_control_inversion: true
+grid_size: 3
+guidance_scale: 7.5
+inversion_prompt: ''
+is_ddim_inversion: true
+is_shuffle: true
+model_id: None
+negative_prompts: ''
+num_inference_steps: 10
+num_inversion_step: 10
+pad: 1
+positive_prompts: pink background
+preprocess_name: depth_zoe
+sample_size: -1
+save_folder: video_for_processing_RAVE
+seed: 0
+video_name: !!python/object/new:bson.objectid.ObjectId
+  state: !!binary |
+    Z330UvDnADVd7Qi4

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Step = require('../models/step');
+const Task = require('../models/task');
 
 // POST: Initiate video upload
 router.post(
@@ -13,6 +14,11 @@ router.post(
         // Let's develop this while integrating it with the app to ensure it works
 
         const stepId = req.params.id;
+        const videoURL = req.body.videoURL;
+
+        if (!videoURL) {
+            return res.status(400).send({ message: 'Video URL is required' });
+        }
 
         // Update the video status
         try {
@@ -27,10 +33,22 @@ router.post(
         }
 
         // Wait 1 second
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // TODO: Upload the video
-        // TODO: Edit the video
-        // (the GPU workstation will do this as soon as it receives a task)
+        
+        const task = new Task({
+            videoUrl: videoURL,
+            stepId: stepId,
+            editType: '360',
+            status: 'Queued'
+        })
+
+        try {
+            await task.save();
+        }
+        catch (error) {
+            return res.status(500).send({ message: 'Error saving task' });
+        }
+
+        console.log("Success")
 
         return res.status(200).send({
             message: 'Video upload initiated'
@@ -44,12 +62,19 @@ router.get(
     async (req, res) => {
         const stepId = req.params.id;
 
-        // TODO: Retrieve the video
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        let step;
+        try {
+            step = await Step.findById(stepId);
+            if (!step) {
+                return res.status(404).send({ message: 'Step not found' });
+            }
+        } catch (error) {
+            return res.status(500).send({ message: 'Error getting step' });
+        }
 
         return res.status(200).send({
             message: 'Video retrieved',
-            url: 'https://example.com'
+            videoURL: step.videoURL
         });
     }
 );
@@ -85,8 +110,42 @@ router.put(
             return res.status(400).send({ message: 'Description is required' });
         }
 
-        // TODO: Edit the video with RAVE
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const stepId = req.params.id;
+
+        let step;
+        try {
+            step = await Step.findById(stepId);
+            if (!step) {
+                return res.status(404).send({ message: 'Step not found' });
+            }
+        } catch (error) {
+            return res.status(500).send({ message: 'Error getting step' });
+        }
+
+        if (!step.videoURL) {
+            return res.status(400).send({ message: 'Video not uploaded' });
+        }
+
+        if (step.videoUploadStatus != "Done") {
+            return res.status(400).send({ message: 'Video upload currently in progress.' });
+        }
+        
+        const task = new Task({
+            videoUrl: step.videoURL,
+            stepId: stepId,
+            editType: 'edit',
+            editDescription: description,
+            status: 'Queued'
+        })
+
+        try {
+            await task.save();
+        }
+        catch (error) {
+            console.error(error);
+            return res.status(500).send({ message: 'Error saving task' });
+        }
+
 
         return res.status(200).send({
             message: 'Description received'
