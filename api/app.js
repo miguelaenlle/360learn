@@ -5,12 +5,13 @@ const app = express();
 
 const experiencesRoutes = require('./routes/experiences-routes');
 const stepsRoutes = require('./routes/steps-routes');
-
+const audioRoutes = require('./routes/audio-routes');
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(cors());
 
 app.use('/experiences', experiencesRoutes);
 app.use('/steps', stepsRoutes);
+app.use('/audio', audioRoutes);
 
 module.exports = app;

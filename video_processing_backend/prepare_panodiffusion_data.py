@@ -2,6 +2,9 @@ import cv2
 import os
 import shutil
 import numpy as np
+import glob
+from moviepy import VideoFileClip, ImageSequenceClip
+  
 
 def process_video(
     input_path,
@@ -38,7 +41,7 @@ def process_video(
     CANVAS_HEIGHT = 512
 
     # Target resized frame height
-    RESIZED_HEIGHT = 256
+    RESIZED_HEIGHT = 128
 
     frame_count = 0
     saved_count = 0
@@ -97,40 +100,63 @@ def process_video(
     cap.release()
     print(f"Done. Extracted {saved_count} frames with max {max_fps} FPS.")
 
-import cv2
-import glob
-import os
 
-def frames_to_video(input_folder="PanoDiffusion/example/output", output_video="final_output/output.mp4", fps=30):
+# def frames_to_video_w_audio(input_video_path, input_folder="PanoDiffusion/example/output", output_video="final_output/output.mp4", fps=30):
+#     # Gather all image paths in sorted order
+#     frames = sorted(glob.glob(os.path.join(input_folder, "*.*")))
+#     if not frames:
+#         print(f"No frames found in '{input_folder}'.")
+#         return
+
+#     # Read the first frame to get height/width
+#     sample_frame = cv2.imread(frames[0])
+#     if sample_frame is None:
+#         print(f"Unable to read the first frame: {frames[0]}")
+#         return
+
+#     height, width, channels = sample_frame.shape
+
+#     # Define codec and create VideoWriter
+#     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+#     out = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
+
+#     # Write each frame to the video
+#     for frame_path in frames:
+#         frame = cv2.imread(frame_path)
+#         if frame is not None:
+#             out.write(frame)
+#         else:
+#             print(f"Warning: unable to read {frame_path}, skipping.")
+
+#     out.release()
+#     print(f"Video saved to '{output_video}' at {fps} FPS.")
+
+
+def frames_to_video_w_audio_moviepy(input_video_path, 
+                                    input_folder="PanoDiffusion/example/output", 
+                                    output_video="final_output/output_with_audio.mp4", 
+                                    fps=30):
     # Gather all image paths in sorted order
     frames = sorted(glob.glob(os.path.join(input_folder, "*.*")))
+    print(frames)
     if not frames:
         print(f"No frames found in '{input_folder}'.")
         return
 
-    # Read the first frame to get height/width
-    sample_frame = cv2.imread(frames[0])
-    if sample_frame is None:
-        print(f"Unable to read the first frame: {frames[0]}")
-        return
+    # Create a video clip from image sequence
+    clip = ImageSequenceClip(frames, fps=fps)
 
-    height, width, channels = sample_frame.shape
+    # Load the audio from the input video
+    video_with_audio = VideoFileClip(input_video_path)
+    audio = video_with_audio.audio
 
-    # Define codec and create VideoWriter
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
+    # Set the audio to the image sequence clip
+    final_clip = clip.with_audio(audio)
 
-    # Write each frame to the video
-    for frame_path in frames:
-        frame = cv2.imread(frame_path)
-        if frame is not None:
-            out.write(frame)
-        else:
-            print(f"Warning: unable to read {frame_path}, skipping.")
+    # Write the final video with audio
+    final_clip.write_videofile(output_video, codec='libx264', audio_codec='aac')
+    print(f"Video with audio saved to '{output_video}'.")
 
-    out.release()
-    print(f"Video saved to '{output_video}' at {fps} FPS.")
-
-frames_to_video()
+# frames_to_video()
 # input_video_path = "video_for_processing/IMG_2054.mp4"
 # process_video(input_video_path)

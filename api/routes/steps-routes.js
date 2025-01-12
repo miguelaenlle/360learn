@@ -19,10 +19,11 @@ router.post(
             return res.status(400).send({ message: 'Name is required' });
         }
 
-        if (!req.body.instructionCC) {
-            return res.status(400).send({ message: 'Instruction is required' });
-        }
-        if (req.body.editType === "Response") {
+        if (req.body.stepType === "Instruction") {
+            if (!req.body.instructionCC) {
+                return res.status(400).send({ message: 'Instruction is required' });
+            }
+        } else if (req.body.stepType === "Response") {
             if (!req.body.responseCC) {
                 return res.status(400).send({ message: 'Response is required' });
             }
@@ -38,10 +39,13 @@ router.post(
             if (!req.body.negativeResponse) {
                 return res.status(400).send({ message: 'Negative response is required' });
             }
+        } else {
+            return res.status(400).send({ message: 'Invalid step type' });
         }
 
         const step = new Step({
             experienceId: req.body.experienceId,
+            stepType: req.body.stepType,
             name: req.body.name,
             instructionCC: req.body.instructionCC,
             responseCC: req.body.responseCC,

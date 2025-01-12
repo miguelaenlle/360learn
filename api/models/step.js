@@ -25,7 +25,6 @@ const Step = mongoose.Schema({
     },
     instructionCC: {
         type: String,
-        required: true
     },
     responseCC: {
         type: String,

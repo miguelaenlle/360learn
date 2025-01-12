@@ -7,7 +7,7 @@ import urllib.request
 import pymongo
 from azure.storage.blob import BlobServiceClient
 from dotenv import load_dotenv
-from prepare_panodiffusion_data import frames_to_video, process_video
+from prepare_panodiffusion_data import frames_to_video_w_audio_moviepy, process_video
 from pymongo import MongoClient
 
 # Load the environment variables from the .env file
@@ -87,8 +87,9 @@ while True:
         time.sleep(5)
 
         # Collate the output video
-        frames_to_video(
-            "PanoDiffusion/example/rgb", ## TODO: Change to output
+        frames_to_video_w_audio_moviepy(
+            video_path,
+            "PanoDiffusion/example/rgb", ## TODO: Change to output (when you have the panodiffusion model ready)
             "video_for_processing_pano_diffusion/output.mp4"
         )
 
