@@ -15,11 +15,11 @@ negative_prompts: ''
 num_inference_steps: 10
 num_inversion_step: 10
 pad: 1
-positive_prompts: pink background
+positive_prompts: lol
 preprocess_name: depth_zoe
 sample_size: -1
 save_folder: video_for_processing_RAVE
 seed: 0
 video_name: !!python/object/new:bson.objectid.ObjectId
   state: !!binary |
-    Z330UvDnADVd7Qi4
+    Z4NOrVvD3kX8Cgkr

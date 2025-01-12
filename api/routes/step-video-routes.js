@@ -2,10 +2,27 @@ const express = require('express');
 const router = express.Router();
 const Step = require('../models/step');
 const Task = require('../models/task');
+const multer = require('multer');
+const path = require('path');
+
+const multerAzureStorage = require("multer-azure-blob-storage");
+
+const azureStorage = new multerAzureStorage.MulterAzureStorage({
+    connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
+    accessKey: process.env.ACCESS_KEY,
+    accountName: '360learnvideostorage',
+    containerName: 'unedited-video',
+    containerAccessLevel: 'blob',
+    urlExpirationTime: 60
+})
+
+// Create Multer middleware
+const upload = multer({ storage: azureStorage });
 
 // POST: Initiate video upload
 router.post(
     '/:id/video',
+    upload.single('video'),
     async (req, res) => {
         // User uploads a video
         // Create job to edit the video
@@ -14,7 +31,12 @@ router.post(
         // Let's develop this while integrating it with the app to ensure it works
 
         const stepId = req.params.id;
-        const videoURL = req.body.videoURL;
+
+        if (!req.file) {
+            return res.status(400).send({ message: 'No video file provided' });
+        }
+
+        const videoURL = req.file.url;
 
         if (!videoURL) {
             return res.status(400).send({ message: 'Video URL is required' });
@@ -126,7 +148,7 @@ router.put(
             return res.status(400).send({ message: 'Video not uploaded' });
         }
 
-        if (step.videoUploadStatus != "Done") {
+        if (step.videoUploadStatus != "Video processed") {
             return res.status(400).send({ message: 'Video upload currently in progress.' });
         }
         

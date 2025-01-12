@@ -17,7 +17,7 @@ const Task = mongoose.Schema({
     },
     editDescription: {
         type: String,
-        required: false
+        d: false
     },
     status: {
         type: String,

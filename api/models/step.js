@@ -13,20 +13,31 @@ const Step = mongoose.Schema({
     videoURL: String,
     videoUploadStatus: {
         type: String,
-        enum: ['No video uploaded', 'Generating 360 degree video', 'Video editing in progress', 'Done'],
+        enum: ['No video uploaded', 'Generating 360 degree video', 'Video is processing', 'Video processed'],
         default: 'No video uploaded'
     },
-    positiveResponse: {
+    stepType: {
+        type: String,
+        enum: [
+            "Instruction", "Response"
+        ],
+        default: "Instruction"
+    },
+    instructionCC: {
         type: String,
         required: true
+    },
+    responseCC: {
+        type: String,
+    },  
+    positiveResponse: {
+        type: String,
     },
     neutralResponse: {
         type: String,
-        required: true
     },
     negativeResponse: {
         type: String,
-        required: true
     }
 })
 
