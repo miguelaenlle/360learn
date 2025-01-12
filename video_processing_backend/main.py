@@ -58,7 +58,7 @@ while True:
     if edit_type == "360":
         new_step_status = "Generating 360 degree video"
     else:  # edit_type == "edit"
-        new_step_status = "Video editing in progress"
+        new_step_status = "Video is processing"
 
     steps_collection.update_one(
         {"_id": step_id},
@@ -108,7 +108,7 @@ while True:
         # Update the step status
         steps_collection.update_one(
             {"_id": step_id},
-            {"$set": {"videoURL": edited_video_url, "videoUploadStatus": "Done"}}
+            {"$set": {"videoURL": edited_video_url, "videoUploadStatus": "Video processed"}}
         )
         print(f"360 degree video generated and uploaded to '{edited_video_url}'.")
 
@@ -151,7 +151,7 @@ while True:
         # Update the step status
         steps_collection.update_one(
             {"_id": step_id},
-            {"$set": {"videoURL": edited_video_url, "videoUploadStatus": "Done"}}
+            {"$set": {"videoURL": edited_video_url, "videoUploadStatus": "Video processed"}}
         )
         print(f"Edited video generated and uploaded to '{edited_video_url}'.")
 

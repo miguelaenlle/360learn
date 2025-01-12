@@ -17,7 +17,10 @@ router.post(
             await experience.save();
             return res.status(201).send({
                 message: 'Experience created',
-                experience
+                experience: {
+                    ...experience.toObject(),
+                    createdAt: experience.createdAt.getTime() / 1000
+                }
             });
         } catch (error) {
             console.error('Error creating experience:', error);
@@ -31,7 +34,11 @@ router.get(
     '/',
     async (req, res) => {
         try {
-            const experiences = await Experience.find();
+            let experiences = await Experience.find();
+            experiences = experiences.map(experience => ({
+                ...experience.toObject(),
+                createdAt: experience.createdAt.getTime() / 1000
+            }))
             return res.status(200).send({ experiences });
         } catch (error) {
             console.error('Error getting experiences:', error);

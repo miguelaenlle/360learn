@@ -8,6 +8,9 @@ const Experience = require('../models/experience');
 router.post(
     '/',
     async (req, res) => {
+
+        console.log("Req Body", req.body);
+
         if (!req.body.experienceId) {
             return res.status(400).send({ message: 'Experience ID is required' });
         }
@@ -16,21 +19,32 @@ router.post(
             return res.status(400).send({ message: 'Name is required' });
         }
 
-        if (!req.body.positiveResponse) {
-            return res.status(400).send({ message: 'Positive response is required' });
+        if (!req.body.instructionCC) {
+            return res.status(400).send({ message: 'Instruction is required' });
         }
+        if (req.body.editType === "Response") {
+            if (!req.body.responseCC) {
+                return res.status(400).send({ message: 'Response is required' });
+            }
 
-        if (!req.body.neutralResponse) {
-            return res.status(400).send({ message: 'Neutral response is required' });
-        }
+            if (!req.body.positiveResponse) {
+                return res.status(400).send({ message: 'Positive response is required' });
+            }
 
-        if (!req.body.negativeResponse) {
-            return res.status(400).send({ message: 'Negative response is required' });
+            if (!req.body.neutralResponse) {
+                return res.status(400).send({ message: 'Neutral response is required' });
+            }
+
+            if (!req.body.negativeResponse) {
+                return res.status(400).send({ message: 'Negative response is required' });
+            }
         }
 
         const step = new Step({
             experienceId: req.body.experienceId,
             name: req.body.name,
+            instructionCC: req.body.instructionCC,
+            responseCC: req.body.responseCC,
             positiveResponse: req.body.positiveResponse,
             neutralResponse: req.body.neutralResponse,
             negativeResponse: req.body.negativeResponse
@@ -38,9 +52,13 @@ router.post(
 
         try {
             await step.save();
-        } catch {
+        } catch (e) {
+            console.error(e);
             return res.status(500).send({ message: 'Error creating step' });
         }
+
+        console.log('step', step);
+
 
         try {
             await Experience.findByIdAndUpdate(
@@ -51,7 +69,8 @@ router.post(
                     }
                 }
             );
-        } catch {
+        } catch (e) {
+            console.error(e);
             return res.status(500).send({ message: 'Error updating experience' });
         }
 
@@ -71,11 +90,19 @@ router.get(
         }
 
         try {
-            const steps = await Step.find({
-                experienceId: req.query.experienceId
-            });
 
-            return res.status(200).send({ steps });
+            const experience = await Experience.findById(req.query.experienceId).populate({
+                path: "stepIds",
+                model: "steps"
+            })
+
+            if (!experience) {
+                return res.status(404).send({ message: 'Experience not found' });
+            }
+            return res.status(200).send({ steps: experience.stepIds.map((step, index) => ({
+                ...step.toObject(),
+                stepNumber: index + 1
+            })) });
         } catch {
             return res.status(500).send({ message: 'Error getting steps' });
         }
@@ -138,6 +165,14 @@ router.put(
 
         if (!req.body.name) {
             return res.status(400).send({ message: 'Name is required' });
+        }
+        
+        if (!req.body.instructionCC) {
+            return res.status(400).send({ message: 'Instruction is required' });
+        }
+
+        if (!req.body.responseCC) {
+            return res.status(400).send({ message: 'Response is required' });
         }
 
         if (!req.body.positiveResponse) {
