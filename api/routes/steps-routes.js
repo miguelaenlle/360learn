@@ -166,77 +166,50 @@ router.get(
 router.put(
     '/:id', // this is either an ID or a step number
     async (req, res) => {
-
         if (!req.body.name) {
             return res.status(400).send({ message: 'Name is required' });
         }
-        
-        if (!req.body.instructionCC) {
-            return res.status(400).send({ message: 'Instruction is required' });
-        }
 
-        if (!req.body.responseCC) {
-            return res.status(400).send({ message: 'Response is required' });
-        }
+        if (req.body.stepType === "Instruction") {
+            if (!req.body.instructionCC) {
+                return res.status(400).send({ message: 'Instruction is required' });
+            }
+        } else if (req.body.stepType === "Response") {
+            if (!req.body.responseCC) {
+                return res.status(400).send({ message: 'Response is required' });
+            }
 
-        if (!req.body.positiveResponse) {
-            return res.status(400).send({ message: 'Positive response is required' });
-        }
+            if (!req.body.positiveResponse) {
+                return res.status(400).send({ message: 'Positive response is required' });
+            }
 
-        if (!req.body.neutralResponse) {
-            return res.status(400).send({ message: 'Neutral response is required' });
-        }
+            if (!req.body.neutralResponse) {
+                return res.status(400).send({ message: 'Neutral response is required' });
+            }
 
-        if (!req.body.negativeResponse) {
-            return res.status(400).send({ message: 'Negative response is required' });
-        }
-        
-        const isId = req.params.id.length === 24;
-
-        let step;
-        if (isId) {
-            try {
-                step = await Step.findById(req.params.id);
-            } catch {
-                return res.status(500).send({ message: 'Error getting step' });
+            if (!req.body.negativeResponse) {
+                return res.status(400).send({ message: 'Negative response is required' });
             }
         } else {
-            try {
-                const idAsNumber = parseInt(req.params.id);
-                if (isNaN(idAsNumber)) {
-                    return res.status(400).send({ message: 'Invalid step number' });
-                }
-
-                if (!req.query.experienceId) {
-                    return res.status(400).send({ message: 'Experience ID is required' });
-                }
-
-                const experience = await Experience.findById(req.query.experienceId);
-
-                if (!experience) {
-                    return res.status(404).send({ message: 'Experience not found' });
-                }
-
-                const stepId = experience.stepIds[idAsNumber];
-
-                if (!stepId) {
-                    return res.status(404).send({ message: 'Step not found' });
-                }
-
-                step = await Step.findById(stepId);
-
-                if (!step) {
-                    return res.status(404).send({ message: 'Step not found' });
-                }
-            } catch {
-                return res.status(500).send({ message: 'Error getting step' });
-            }
+            return res.status(400).send({ message: 'Invalid step type' });
         }
 
+        let step;
+        try {
+            step = await Step.findById(req.params.id);
+        } catch {
+            return res.status(500).send({ message: 'Error getting step' });
+        }
+        
         step.name = req.body.name;
+        step.stepType = req.body.stepType;
+        step.instructionCC = req.body.instructionCC;
+        step.responseCC = req.body.responseCC
         step.negativeResponse = req.body.negativeResponse;
         step.positiveResponse = req.body.positiveResponse;
         step.neutralResponse = req.body.neutralResponse;
+
+        console.log('step', step);
 
         try {
             await step.save();

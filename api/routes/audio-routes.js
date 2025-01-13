@@ -2,6 +2,13 @@ const https = require('https');
 const express = require('express');
 const bodyParser = require('body-parser');
 const { textToSpeech } = require('./azure-cognitiveservices-speech');
+
+const { AzureOpenAI } = require("openai");
+const { 
+  DefaultAzureCredential, 
+  getBearerTokenProvider 
+} = require("@azure/identity");
+
 /**
  * Converts text to speech using Azure Cognitive Services and returns audio data as a Buffer.
  * @param {string} text - The text to convert to speech.
@@ -59,7 +66,7 @@ router.post('/text-to-speech', async (req, res) => {
     }
 
     try {
-        const randomFileName = `${Math.random().toString(36).substring(7)}.mp3`;
+        const randomFileName = `tmp/${Math.random().toString(36).substring(7)}.mp3`;
         const audioStream = await textToSpeech(text, randomFileName);
         res.set({
             'Content-Type': 'audio/mpeg',
@@ -70,6 +77,54 @@ router.post('/text-to-speech', async (req, res) => {
         console.error(e);
         return res.status(500).json({ error: e.message });
     }
+});
+
+router.post('/response-correct', async (req, res) => {
+    const { userResponse, instruction } = req.body;
+    if (!userResponse) {
+        return res.status(400).json({ error: "Missing 'userResponse' in request body." });
+    }
+    if (!instruction) {
+        return res.status(400).json({ error: "Missing 'instruction' in request body." });
+    }
+    // Analyze alignment between user response and instruction
+
+    const endpoint = process.env["AZURE_OPENAI_ENDPOINT"]
+    const apiKey = process.env["AZURE_OPENAI_KEY"]
+
+    const deployment = "gpt-35-turbo";
+
+    // const credential = new DefaultAzureCredential();
+    // const scope = "https://cognitiveservices.azure.com/.default";
+    // const azureADTokenProvider = getBearerTokenProvider(credential, scope);
+    
+        
+    const client = new AzureOpenAI({ 
+        endpoint, apiKey, deployment, apiVersion: "2024-05-01-preview"});
+        
+    const result = await client.chat.completions.create({
+        messages: [
+        { role: "system", content: "" },
+        { role: "user", content: `User instruction: ${instruction}
+User response: ${userResponse}
+
+Did the user respond correctly? Respond with just yes or no` }
+        ],
+        model: "",
+    });
+
+    for (const choice of result.choices) {
+        const messageContent = choice.message.content;
+        const messageLowercase = messageContent.toLowerCase();
+        if (messageLowercase.includes("yes")) {
+            return res.json({ correct: true });
+        }
+        if (messageLowercase.includes("no")) {
+            return res.json({ correct: false });
+        }
+    }
+
+    return res.json({ correct: false });
 });
 
 module.exports = router;
