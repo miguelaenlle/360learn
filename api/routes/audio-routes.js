@@ -92,7 +92,7 @@ router.post('/response-correct', async (req, res) => {
     const endpoint = process.env["AZURE_OPENAI_ENDPOINT"]
     const apiKey = process.env["AZURE_OPENAI_KEY"]
 
-    const deployment = "gpt-35-turbo";
+    const deployment = "gpt-4o";
 
     // const credential = new DefaultAzureCredential();
     // const scope = "https://cognitiveservices.azure.com/.default";
@@ -104,7 +104,7 @@ router.post('/response-correct', async (req, res) => {
         
     const result = await client.chat.completions.create({
         messages: [
-        { role: "system", content: "" },
+        { role: "system", content: "You are an AI on the backend of an immersive social skills training experience for autistic students. Be lenient." },
         { role: "user", content: `User instruction: ${instruction}
 User response: ${userResponse}
 
